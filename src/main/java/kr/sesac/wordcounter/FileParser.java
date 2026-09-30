@@ -6,6 +6,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,7 +21,7 @@ public class FileParser {
     private static final String[] TSV_COLUMNS = {"document"};
     private static final String HTML_SELECTOR = "#content";
 
-    public static void parse (Path input, Map<String, Integer> wordCounts) throws IOException {
+    public static void parse (Path input, Map<String, Long> wordCounts) throws IOException {
         String fileName = input.getFileName().toString().toLowerCase();
 
         if (fileName.endsWith(".txt")) {
@@ -29,7 +30,7 @@ public class FileParser {
             parseCsv(input, wordCounts);
         } else if (fileName.endsWith(".tsv")) {
             parseTsv(input, wordCounts);
-        } else if (fileName.endsWith(".html")) {
+        } else if (fileName.endsWith(".html") || fileName.endsWith(".htm")) {
             parseHtml(input, wordCounts);
         } else {
             System.out.println("현재 지원하지 않는 파일 형식입니다.");
@@ -37,7 +38,7 @@ public class FileParser {
     }
 
     // TXT
-    private static void parseTxt(Path input, Map<String, Integer> wordCounts) throws IOException {
+    private static void parseTxt(Path input, Map<String, Long> wordCounts) throws IOException {
 
         try (BufferedReader reader = Files.newBufferedReader(input, StandardCharsets.UTF_8)) {
 
@@ -50,7 +51,7 @@ public class FileParser {
     }
 
     // CSV
-    private static void parseCsv(Path input, Map<String, Integer> wordCounts) throws IOException {
+    private static void parseCsv(Path input, Map<String, Long> wordCounts) throws IOException {
 
         try (BufferedReader reader =
                      Files.newBufferedReader(
@@ -77,7 +78,7 @@ public class FileParser {
     // TSV
     private static void parseTsv(
             Path input,
-            Map<String, Integer> wordCounts
+            Map<String, Long> wordCounts
     ) throws IOException {
 
         try (BufferedReader reader =
@@ -106,19 +107,25 @@ public class FileParser {
     // HTML
     private static void parseHtml(
             Path input,
-            Map<String, Integer> wordCounts
+            Map<String, Long> wordCounts
     ) throws IOException {
 
         Document document = Jsoup.parse(input.toFile(), StandardCharsets.UTF_8.name());
 
-        Element content = document.selectFirst(HTML_SELECTOR);
+        Elements contents = document.select(HTML_SELECTOR);
 
-        if (content != null) {
-            // 본문 분석에서 제외할 요소 제거
-            content.select("header, nav, footer, script, style").remove();
-
-            String text = content.text();
-            WordCounter.countWords(text, wordCounts);
+        if (contents.size() != 1) {
+           throw new IOException("HTML 본문 요소를 정확히 하나 찾을 수 없습니다. " + "선택자: " + HTML_SELECTOR
+                   + ", 찾은 개수: " + contents.size());
         }
+
+        Element content = contents.getFirst();
+
+        // 본문 분석에서 제외할 요소 제거
+        content.select("header, nav, footer, script, style").remove();
+
+        String text = content.text();
+        WordCounter.countWords(text, wordCounts);
+
     }
 }

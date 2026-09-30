@@ -4,7 +4,7 @@ import java.util.Map;
 
 public class WordCounter {
 
-    public static void countWords(String text, Map<String, Integer> wordCounts) {
+    public static void countWords(String text, Map<String, Long> wordCounts) {
         String[] words = text.split("[^a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ]+");
 
         for (String word : words) {
@@ -18,7 +18,7 @@ public class WordCounter {
 
             word = word.toLowerCase();
 
-            wordCounts.put(word, wordCounts.getOrDefault(word, 0) + 1);
+            wordCounts.put(word, wordCounts.getOrDefault(word, 0L) + 1L);
         }
     }
 }
