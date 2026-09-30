@@ -42,7 +42,7 @@ public class Main {
                     break;
 
                 case "4":
-                    System.out.println("전체 결과 저장은 다음 단계에서 구현합니다.");
+                    saveResult(latestResult);
                     break;
 
                 case "5":
@@ -215,6 +215,21 @@ public class Main {
             System.out.println(word + " = " + count);
 
             return;
+        }
+    }
+
+    private static void saveResult(AnalysisResult latestResult) {
+        // 아직 분석한 적 없는 경우
+        if (latestResult == null) {
+            System.out.println("먼저 새 분석을 실행하세요.");
+            return;
+        }
+
+        try {
+            Path outputPath = ResultSaver.save(latestResult);
+            System.out.println("저장 완료: " + outputPath);
+        } catch (IOException e) {
+            System.out.println("저장 실패: " + e.getMessage());
         }
     }
 }
