@@ -1,5 +1,6 @@
 package kr.sesac.wordcounter.analysis;
 
+import kr.sesac.wordcounter.model.AnalysisConfig;
 import kr.sesac.wordcounter.model.AnalysisResult;
 import kr.sesac.wordcounter.parser.FileParser;
 
@@ -17,7 +18,7 @@ public class FileAnalyzer {
 
     private FileAnalyzer() {}
 
-    public static AnalysisResult analyze(Path input) throws IOException {
+    public static AnalysisResult analyze(Path input, AnalysisConfig config) throws IOException {
 
         if (!Files.exists(input)) {
             throw new IOException("경로를 찾을 수 없습니다: " + input);
@@ -37,7 +38,7 @@ public class FileAnalyzer {
             Map<String, Long> fileWordCounts = new HashMap<>();
 
             try {
-                FileParser.parse(file, fileWordCounts);
+                FileParser.parse(file, fileWordCounts, config);
 
                 mergeCounts(totalWordCounts, fileWordCounts);
 

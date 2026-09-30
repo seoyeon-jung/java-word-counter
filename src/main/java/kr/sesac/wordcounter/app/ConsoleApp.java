@@ -3,12 +3,14 @@ package kr.sesac.wordcounter.app;
 import kr.sesac.wordcounter.analysis.FileAnalyzer;
 import kr.sesac.wordcounter.analysis.WordCountSorter;
 import kr.sesac.wordcounter.analysis.WordCounter;
+import kr.sesac.wordcounter.model.AnalysisConfig;
 import kr.sesac.wordcounter.model.AnalysisResult;
 import kr.sesac.wordcounter.output.ResultSaver;
 
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -55,7 +57,11 @@ public class ConsoleApp {
 
             try {
                 Path input = Path.of(inputPath);
-                AnalysisResult result = FileAnalyzer.analyze(input);
+
+                String[] csvColumns = readCsvColumns();
+                AnalysisConfig config = new AnalysisConfig(csvColumns);
+
+                AnalysisResult result = FileAnalyzer.analyze(input, config);
 
                 latestResult = result;
                 printAnalysisResult(result);
@@ -66,6 +72,28 @@ public class ConsoleApp {
             } catch (IOException e) {
                 System.out.println(e.getMessage());
             }
+        }
+    }
+
+    private String[] readCsvColumns() {
+        while(true) {
+            System.out.println("CSV 분석 열 (Enter: text, 여러 개는 쉼표로 구분) > ");
+            String input = scanner.nextLine().trim();
+
+            if (input.isEmpty()) {
+                return new String[]{"text"};
+            }
+
+            String[] columns = Arrays.stream(input.split(","))
+                    .map(String::trim)
+                    .filter(column -> !column.isEmpty())
+                    .toArray(String[]::new);
+
+            if (columns.length > 0) {
+                return columns;
+            }
+
+            System.out.println("분석할 CSV 열을 하나 이상 입력하세요.");
         }
     }
 

@@ -1,6 +1,7 @@
 package kr.sesac.wordcounter.parser;
 
 import kr.sesac.wordcounter.analysis.WordCounter;
+import kr.sesac.wordcounter.model.AnalysisConfig;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -19,13 +20,12 @@ import java.util.Map;
 
 public class FileParser {
 
-    private static final String[] CSV_COLUMNS = {"text"};
     private static final String[] TSV_COLUMNS = {"document"};
     private static final String HTML_SELECTOR = "#content";
 
     private FileParser() {}
 
-    public static void parse(Path input, Map<String, Long> wordCounts) throws IOException {
+    public static void parse(Path input, Map<String, Long> wordCounts, AnalysisConfig config) throws IOException {
 
         String fileName = input.getFileName().toString().toLowerCase();
 
@@ -37,7 +37,7 @@ public class FileParser {
                     input,
                     wordCounts,
                     CSVFormat.DEFAULT,
-                    CSV_COLUMNS
+                    config.getCsvColumns()
             );
 
         } else if (fileName.endsWith(".tsv")) {
