@@ -46,7 +46,7 @@ public class Main {
                     break;
 
                 case "5":
-                    System.out.println("최근 분석 요약은 다음 단계에서 구현합니다.");
+                    showLatestSummary(latestResult);
                     break;
 
                 case "0":
@@ -231,5 +231,50 @@ public class Main {
         } catch (IOException e) {
             System.out.println("저장 실패: " + e.getMessage());
         }
+    }
+
+    private static void showLatestSummary(AnalysisResult latestResult) {
+        // 아직 분석한 적 없는 경우
+        if (latestResult == null) {
+            System.out.println("먼저 새 분석을 실행하세요.");
+            return;
+        }
+
+        System.out.println();
+        System.out.println("최근 분석 요약");
+
+        System.out.println(
+                "입력 경로: "
+                        + latestResult.getInputPath()
+        );
+
+        System.out.println(
+                "파일: 시도 "
+                        + latestResult.getAttemptedFiles()
+                        + "개 / 성공 "
+                        + latestResult.getSuccessFiles()
+                        + "개 / 실패 "
+                        + latestResult.getFailedFiles()
+                        + "개 / 지원하지 않아 건너뜀 "
+                        + latestResult.getSkippedFiles()
+                        + "개"
+        );
+
+        System.out.println(
+                "전체 단어: "
+                        + latestResult.getTotalCount()
+                        + "개"
+        );
+
+        System.out.println(
+                "서로 다른 단어: "
+                        + latestResult.getDistinctCount()
+                        + "개"
+        );
+
+        System.out.printf(
+                "처리 시간: %.3fms%n",
+                latestResult.getElapsedMillis()
+        );
     }
 }
