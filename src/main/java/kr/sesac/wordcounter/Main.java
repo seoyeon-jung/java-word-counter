@@ -3,6 +3,9 @@ package kr.sesac.wordcounter;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,11 +19,12 @@ public class Main {
 
     private static final String CSV_COLUMN = "text";
     private static final String TSV_COLUMN = "document";
+    private static final String HTML_SELECTOR = "#content";
 
     public static void main(String[] args) throws IOException {
 
         // 테스트할 파일
-        Path input = Path.of("samples/equivalent/basic.tsv");
+        Path input = Path.of("samples/equivalent/basic.html");
 
         System.out.println("문서 단어 분석기");
         System.out.println("입력 파일: " + input);
@@ -149,6 +153,39 @@ public class Main {
                                 wordCounts.getOrDefault(word, 0) + 1
                         );
                     }
+                }
+            }
+        }
+
+        else if (fileName.endsWith(".html")) {
+            // HTML 파일을 jsoup Document로 변환
+            Document document = Jsoup.parse(input.toFile(), StandardCharsets.UTF_8.name());
+
+            // #conent 요소 찾기
+            Element content = document.selectFirst(HTML_SELECTOR);
+
+            if (content != null) {
+                // 제외할 요소들 제거하기
+                content.select("header, nav, footer, script, style").remove();
+
+                // HTML 태그 제외 실제 텍스트만 가져오기
+                String text = content.text();
+
+                String[] words =
+                        text.split("[^a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ]+");
+
+                for (String word : words) {
+                    if (word.isEmpty()) {
+                        continue;
+                    }
+
+                    if (word.matches("\\d+")) {
+                        continue;
+                    }
+
+                    word = word.toLowerCase();
+
+                    wordCounts.put(word, wordCounts.getOrDefault(word, 0) + 1);
                 }
             }
         }
