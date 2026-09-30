@@ -3,6 +3,9 @@ package kr.sesac.wordcounter;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Main {
@@ -31,7 +34,7 @@ public class Main {
                     break;
 
                 case "2":
-                    System.out.println("상위 N개 단어 조회는 다음 단계에서 구현합니다.");
+                    showTopWords(scanner, latestResult);
                     break;
 
                 case "3":
@@ -122,5 +125,69 @@ public class Main {
         );
 
         System.out.printf("처리 시간: %.3fms%n", result.getElapsedMillis());
+    }
+
+    public static void showTopWords(Scanner scanner, AnalysisResult latestResult) {
+        // 아직 분석한 적 없는 경우
+        if (latestResult == null) {
+            System.out.println("먼저 새 분석을 실행하세요.");
+            return;
+        }
+
+        // 분석 성공했지만 단어가 하나도 없는 경우
+        if (latestResult.getWordCounts().isEmpty()) {
+            System.out.println("조회할 단어가 없습니다.");
+            return;
+        }
+
+        int topN = readTopN(scanner);
+
+        List<Map.Entry<String, Long>> entries = new ArrayList<>(latestResult.getWordCounts().entrySet());
+
+        entries.sort((e1, e2) -> {
+            int countCompare = Long.compare(e2.getValue(), e1.getValue());
+
+            if (countCompare != 0) {
+                return countCompare;
+            }
+
+            return e1.getKey().compareTo(e2.getKey());
+        });
+
+        int limit = Math.min(topN, entries.size());
+
+        System.out.println();
+        System.out.println("상위 " + topN + "개 단어");
+
+        for (int i = 0; i < limit; i++) {
+            Map.Entry<String, Long> entry = entries.get(i);
+
+            System.out.println((i + 1) + ". " + entry.getKey() + " = " + entry.getValue());
+        }
+    }
+
+    public static int readTopN(Scanner scanner) {
+        while (true) {
+            System.out.println("몇 개를 볼까요? " + "(Enter: 10) > ");
+            String input = scanner.nextLine().trim();
+
+            // 그냥 Enter 누른 경우
+            if (input.isEmpty()) {
+                return 10;
+            }
+
+            try {
+                int topN = Integer.parseInt(input);
+
+                if (topN < 1) {
+                    System.out.println("1 이상의 숫자를 입력하세요.");
+                    continue;
+                }
+
+                return topN;
+            } catch (NumberFormatException e) {
+                System.out.println("1 이상의 숫자를 입력하세요.");
+            }
+        }
     }
 }
