@@ -10,7 +10,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         // 테스트할 파일
-        Path input = Path.of("samples/equivalent/basic.html");
+        Path input = Path.of("samples/equivalent/basic.tsv");
 
         System.out.println("문서 단어 분석기");
         System.out.println("입력 파일: " + input);

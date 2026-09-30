@@ -16,8 +16,8 @@ import java.util.Map;
 
 public class FileParser {
 
-    private static final String CSV_COLUMN = "text";
-    private static final String TSV_COLUMN = "document";
+    private static final String[] CSV_COLUMNS = {"text"};
+    private static final String[] TSV_COLUMNS = {"document"};
     private static final String HTML_SELECTOR = "#content";
 
     public static void parse (Path input, Map<String, Integer> wordCounts) throws IOException {
@@ -66,8 +66,10 @@ public class FileParser {
                              .parse(reader)) {
 
             for (CSVRecord record : parser) {
-                String text = record.get(CSV_COLUMN);
-                WordCounter.countWords(text, wordCounts);
+                for (String column : CSV_COLUMNS) {
+                    String text = record.get(column);
+                    WordCounter.countWords(text, wordCounts);
+                }
             }
         }
     }
@@ -93,8 +95,10 @@ public class FileParser {
                              .parse(reader)) {
 
             for (CSVRecord record : parser) {
-                String document = record.get(TSV_COLUMN);
-                WordCounter.countWords(document, wordCounts);
+                for (String column : TSV_COLUMNS) {
+                    String text = record.get(column);
+                    WordCounter.countWords(text, wordCounts);
+                }
             }
         }
     }
