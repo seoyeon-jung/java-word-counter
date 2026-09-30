@@ -15,11 +15,12 @@ import java.util.Map;
 public class Main {
 
     private static final String CSV_COLUMN = "text";
+    private static final String TSV_COLUMN = "document";
 
     public static void main(String[] args) throws IOException {
 
         // 테스트할 파일
-        Path input = Path.of("samples/edge/header-only.csv");
+        Path input = Path.of("samples/equivalent/basic.tsv");
 
         System.out.println("문서 단어 분석기");
         System.out.println("입력 파일: " + input);
@@ -105,6 +106,53 @@ public class Main {
                 }
             }
         }
+
+        // tsv 파일 처리
+        else if (fileName.endsWith(".tsv")) {
+            try (BufferedReader reader =
+                         Files.newBufferedReader(input, StandardCharsets.UTF_8);
+
+                 CSVParser parser =
+                         CSVFormat.DEFAULT.builder()
+                                 // TSV는 쉼표가 아니라 탭으로 열을 구분
+                                 .setDelimiter('\t')
+                                 .setHeader()
+                                 .setSkipHeaderRecord(true)
+                                 .get()
+                                 .parse(reader)) {
+
+                for (CSVRecord record : parser) {
+
+                    // TSV에서는 document 열만 분석
+                    String document = record.get(TSV_COLUMN);
+
+                    String[] words =
+                            document.split("[^a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ]+");
+
+                    for (String word : words) {
+
+                        if (word.isEmpty()) {
+                            continue;
+                        }
+
+                        // 숫자로만 이루어진 단어 제외
+                        if (word.matches("\\d+")) {
+                            continue;
+                        }
+
+                        // 영문 소문자 변환
+                        word = word.toLowerCase();
+
+                        // 단어별 횟수 증가
+                        wordCounts.put(
+                                word,
+                                wordCounts.getOrDefault(word, 0) + 1
+                        );
+                    }
+                }
+            }
+        }
+
         else {
             System.out.println("현재 지원하지 않는 파일 형식입니다.");
             return;
