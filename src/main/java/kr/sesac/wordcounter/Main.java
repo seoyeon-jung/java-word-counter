@@ -38,7 +38,7 @@ public class Main {
                     break;
 
                 case "3":
-                    System.out.println("특정 단어 조회는 다음 단계에서 구현합니다.");
+                    findWordCount(scanner, latestResult);
                     break;
 
                 case "4":
@@ -127,7 +127,7 @@ public class Main {
         System.out.printf("처리 시간: %.3fms%n", result.getElapsedMillis());
     }
 
-    public static void showTopWords(Scanner scanner, AnalysisResult latestResult) {
+    private static void showTopWords(Scanner scanner, AnalysisResult latestResult) {
         // 아직 분석한 적 없는 경우
         if (latestResult == null) {
             System.out.println("먼저 새 분석을 실행하세요.");
@@ -166,7 +166,7 @@ public class Main {
         }
     }
 
-    public static int readTopN(Scanner scanner) {
+    private static int readTopN(Scanner scanner) {
         while (true) {
             System.out.println("몇 개를 볼까요? " + "(Enter: 10) > ");
             String input = scanner.nextLine().trim();
@@ -188,6 +188,33 @@ public class Main {
             } catch (NumberFormatException e) {
                 System.out.println("1 이상의 숫자를 입력하세요.");
             }
+        }
+    }
+
+    private static void findWordCount(Scanner scanner, AnalysisResult latestResult) {
+        // 아직 분석한 적 없는 경우
+        if (latestResult == null) {
+            System.out.println("먼저 새 분석을 실행하세요.");
+            return;
+        }
+
+        while (true) {
+            System.out.println("찾을 단어 >");
+
+            String input = scanner.nextLine();
+            List<String> words = WordCounter.extractWords(input);
+
+            if (words.size() != 1) {
+                System.out.println("단어 하나만 입력하세요.");
+                continue;
+            }
+
+            String word = words.get(0);
+            long count = latestResult.getWordCounts().getOrDefault(word, 0L);
+
+            System.out.println(word + " = " + count);
+
+            return;
         }
     }
 }
