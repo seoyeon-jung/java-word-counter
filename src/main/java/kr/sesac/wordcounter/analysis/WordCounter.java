@@ -14,7 +14,7 @@ public class WordCounter {
 
     public static void countWords(String text, Map<String, Long> wordCounts) {
         for (String word : extractWords(text)) {
-            wordCounts.put(word, wordCounts.merge(word, 1L, Long::sum));
+            wordCounts.merge(word, 1L, Long::sum);
         }
     }
 
