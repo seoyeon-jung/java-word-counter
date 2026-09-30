@@ -1,4 +1,4 @@
-package kr.sesac.wordcounter;
+package kr.sesac.wordcounter.model;
 
 import java.nio.file.Path;
 import java.util.Map;
