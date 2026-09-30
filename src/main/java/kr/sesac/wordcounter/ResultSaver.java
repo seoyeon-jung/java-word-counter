@@ -22,16 +22,21 @@ public class ResultSaver {
 
         List<Map.Entry<String, Long>> entries = new ArrayList<>(result.getWordCounts().entrySet());
         entries.sort((e1, e2) -> {
-            int countCompare = Long.compare(e2.getValue(), e1.getValue());
 
-            if (countCompare == 0) {
+            // 1. 단어 등장 횟수 내림차순
+            int countCompare =
+                    Long.compare(e2.getValue(), e1.getValue());
+
+            if (countCompare != 0) {
                 return countCompare;
             }
 
+            // 2. 등장 횟수가 같으면 단어 오름차순
             return e1.getKey().compareTo(e2.getKey());
         });
 
         try (BufferedWriter writer = Files.newBufferedWriter(OUTPUT_PATH, StandardCharsets.UTF_8)) {
+
             writer.write("word\tcount");
             writer.newLine();
 
