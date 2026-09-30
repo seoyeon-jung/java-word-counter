@@ -134,7 +134,13 @@ public class Main {
             return;
         }
 
-        // 분석 성공했지만 단어가 하나도 없는 경우
+        // 성공했지만 분석 결과가 없는 경우
+        if (!latestResult.hasSuccessfulFiles()) {
+            System.out.println("성공한 분석 결과가 없어 조회할 수 없습니다");
+            return;
+        }
+
+        // 조회할 단어가 없는 경우
         if (latestResult.getWordCounts().isEmpty()) {
             System.out.println("조회할 단어가 없습니다.");
             return;
@@ -198,6 +204,11 @@ public class Main {
             return;
         }
 
+        if (!latestResult.hasSuccessfulFiles()) {
+            System.out.println("성공한 분석 결과가 없어 조회할 수 없습니다.");
+            return;
+        }
+
         while (true) {
             System.out.println("찾을 단어 >");
 
@@ -222,6 +233,11 @@ public class Main {
         // 아직 분석한 적 없는 경우
         if (latestResult == null) {
             System.out.println("먼저 새 분석을 실행하세요.");
+            return;
+        }
+
+        if (!latestResult.hasSuccessfulFiles()) {
+            System.out.println("성공한 분석 결과가 없어 저장할 수 없습니다");
             return;
         }
 

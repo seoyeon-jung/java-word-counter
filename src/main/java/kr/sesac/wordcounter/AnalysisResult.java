@@ -78,4 +78,8 @@ public class AnalysisResult {
     public double getElapsedMillis() {
         return elapsedNanos / 1_000_000.0;
     }
+
+    public boolean hasSuccessfulFiles() {
+        return successFiles > 0;
+    }
 }

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 public class FileParser {
@@ -66,11 +67,63 @@ public class FileParser {
                              .get()
                              .parse(reader)) {
 
+            validateHeaders(parser, CSV_COLUMNS);
+
+            int headerCount = parser.getHeaderNames().size();
+
             for (CSVRecord record : parser) {
+                validateRecordWidth(record, headerCount);
+
                 for (String column : CSV_COLUMNS) {
-                    String text = record.get(column);
+                    String actualColumn = findActualHeader(parser, column);
+                    String text = record.get(actualColumn);
+
                     WordCounter.countWords(text, wordCounts);
                 }
+            }
+        }
+    }
+
+    private static void validateRecordWidth(CSVRecord record, int headerCount) throws IOException {
+        if (record.size() != headerCount) {
+            throw new IOException("헤더와 데이터의 열 개수가 일치하지 않습니다.");
+        }
+    }
+
+    private static String findActualHeader(CSVParser parser, String column) throws IOException {
+        for (String header : parser.getHeaderNames()) {
+            if (header.trim().equals(column)) {
+                return header;
+            }
+        }
+
+        throw new IOException("필수 열이 없습니다: " + column);
+    }
+
+    private static void validateHeaders(CSVParser parser, String[] requiredColumns) throws IOException {
+        List<String> headers = parser.getHeaderNames();
+
+        if (headers.isEmpty()) {
+            throw new IOException("헤더가 없습니다.");
+        }
+
+        for (String requiredColumn : requiredColumns) {
+
+            boolean found = false;
+
+            for (String header : headers) {
+
+                if (header.trim().equals(requiredColumn)) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                throw new IOException(
+                        "필수 열이 없습니다: "
+                                + requiredColumn
+                );
             }
         }
     }
@@ -95,9 +148,16 @@ public class FileParser {
                              .get()
                              .parse(reader)) {
 
+            validateHeaders(parser, TSV_COLUMNS);
+
+            int headerCount = parser.getHeaderNames().size();
+
             for (CSVRecord record : parser) {
+                validateRecordWidth(record, headerCount);
+
                 for (String column : TSV_COLUMNS) {
-                    String text = record.get(column);
+                    String actualColumn = findActualHeader(parser, column);
+                    String text = record.get(actualColumn);
                     WordCounter.countWords(text, wordCounts);
                 }
             }
