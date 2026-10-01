@@ -8,12 +8,14 @@ import kr.sesac.wordcounter.model.AnalysisResult;
 import kr.sesac.wordcounter.output.ResultSaver;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.stream.Stream;
 
 public class ConsoleApp {
 
@@ -58,8 +60,15 @@ public class ConsoleApp {
             try {
                 Path input = Path.of(inputPath);
 
-                String[] csvColumns = readCsvColumns();
-                AnalysisConfig config = new AnalysisConfig(csvColumns);
+                AnalysisConfig config;
+
+                // 분석 대상에 CSV 파일이 있을 때만 CSV 분석 열을 입력받는다.
+                if (containsCsv(input)) {
+                    String[] csvColumns = readCsvColumns();
+                    config = new AnalysisConfig(csvColumns);
+                } else {
+                    config = AnalysisConfig.defaultConfig();
+                }
 
                 AnalysisResult result = FileAnalyzer.analyze(input, config);
 
@@ -75,9 +84,43 @@ public class ConsoleApp {
         }
     }
 
+    /**
+     * 입력한 경로의 분석 대상에 CSV 파일이 포함되어 있는지 확인한다.
+     *
+     * 파일을 직접 입력한 경우:
+     * - 해당 파일의 확장자가 .csv인지 확인
+     *
+     * 폴더를 입력한 경우:
+     * - 바로 아래의 일반 파일 중 .csv 파일이 있는지 확인
+     * - 하위 폴더는 탐색하지 않는다.
+     */
+    private boolean containsCsv(Path input) {
+        if (Files.isRegularFile(input)) {
+            return isCsvFile(input);
+        }
+
+        if (Files.isDirectory(input)) {
+            try (Stream<Path> paths = Files.list(input)) {
+                return paths
+                    .filter(Files::isRegularFile)
+                    .anyMatch(this::isCsvFile);
+            } catch (IOException e) {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isCsvFile(Path file) {
+        String fileName = file.getFileName().toString().toLowerCase();
+        return fileName.endsWith(".csv");
+    }
+
     private String[] readCsvColumns() {
-        while(true) {
-            System.out.println("CSV 분석 열 (Enter: text, 여러 개는 쉼표로 구분) > ");
+        while (true) {
+            System.out.print("CSV 분석 열 (Enter: text, 여러 개는 쉼표로 구분) > ");
+
             String input = scanner.nextLine().trim();
 
             if (input.isEmpty()) {
@@ -85,9 +128,9 @@ public class ConsoleApp {
             }
 
             String[] columns = Arrays.stream(input.split(","))
-                    .map(String::trim)
-                    .filter(column -> !column.isEmpty())
-                    .toArray(String[]::new);
+                .map(String::trim)
+                .filter(column -> !column.isEmpty())
+                .toArray(String[]::new);
 
             if (columns.length > 0) {
                 return columns;
@@ -109,8 +152,7 @@ public class ConsoleApp {
 
         int topN = readTopN();
 
-        List<Map.Entry<String, Long>> entries =
-                WordCountSorter.sortedEntries(latestResult.getWordCounts());
+        List<Map.Entry<String, Long>> entries = WordCountSorter.sortedEntries(latestResult.getWordCounts());
 
         int limit = Math.min(topN, entries.size());
 
@@ -120,12 +162,7 @@ public class ConsoleApp {
         for (int i = 0; i < limit; i++) {
             Map.Entry<String, Long> entry = entries.get(i);
 
-            System.out.println(
-                    (i + 1) + ". "
-                            + entry.getKey()
-                            + " = "
-                            + entry.getValue()
-            );
+            System.out.println((i + 1) + ". " + entry.getKey() + " = " + entry.getValue());
         }
     }
 
@@ -159,8 +196,7 @@ public class ConsoleApp {
         while (true) {
             System.out.print("찾을 단어 > ");
 
-            List<String> words =
-                    WordCounter.extractWords(scanner.nextLine());
+            List<String> words = WordCounter.extractWords(scanner.nextLine());
 
             if (words.size() != 1) {
                 System.out.println("단어 하나만 입력하세요.");
@@ -170,8 +206,7 @@ public class ConsoleApp {
             String word = words.get(0);
 
             long count =
-                    latestResult.getWordCounts()
-                            .getOrDefault(word, 0L);
+                latestResult.getWordCounts().getOrDefault(word, 0L);
 
             System.out.println(word + " = " + count);
             return;
@@ -234,28 +269,28 @@ public class ConsoleApp {
 
     private void printResultDetails(AnalysisResult result) {
         System.out.println(
-                "파일: 시도 "
-                        + result.getAttemptedFiles()
-                        + "개 / 성공 "
-                        + result.getSuccessFiles()
-                        + "개 / 실패 "
-                        + result.getFailedFiles()
-                        + "개 / 지원하지 않아 건너뜀 "
-                        + result.getSkippedFiles()
-                        + "개"
+            "파일: 시도 "
+                + result.getAttemptedFiles()
+                + "개 / 성공 "
+                + result.getSuccessFiles()
+                + "개 / 실패 "
+                + result.getFailedFiles()
+                + "개 / 지원하지 않아 건너뜀 "
+                + result.getSkippedFiles()
+                + "개"
         );
 
         System.out.println(
-                "전체 단어: "
-                        + result.getTotalCount()
-                        + "개 / 서로 다른 단어: "
-                        + result.getDistinctCount()
-                        + "개"
+            "전체 단어: "
+                + result.getTotalCount()
+                + "개 / 서로 다른 단어: "
+                + result.getDistinctCount()
+                + "개"
         );
 
         System.out.printf(
-                "처리 시간: %.3fms%n",
-                result.getElapsedMillis()
+            "처리 시간: %.3fms%n",
+            result.getElapsedMillis()
         );
     }
 
